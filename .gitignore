@@ -1,3 +1,16 @@
+# Custom
+.DS_Store
+fer2013/
+img/
+img_v1/
+stylegan3/
+training_checkpoints/
+train/
+test/
+dnnlib/
+torch_utils/
+GenFacialExpressions/StyleGan/stylegan3-r-ffhq-1024x1024.pkl
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
