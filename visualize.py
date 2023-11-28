@@ -2,7 +2,7 @@
 import time
 import matplotlib.pyplot as plt
 
-from stylegan3 import gen_img_for_vector
+from smilegan3 import gen_img_for_vector
 from model import FEAR, DISGUST, ANGRY, SURPRISE, SAD, HAPPY, NEUTRAL
 
 def visualize_avg_vectors(export = False):

@@ -16,14 +16,55 @@ from vector import add_and_multiply_vectors
 # DANGEROUS, may lead to crash
 os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'
 
-def gen_emotion_row(name, random_factor=0.25, export=False, visualize=True):
+# ----------------------------------------- Generate Images ----------------------------------------- #
 
+def gen_emotion(emotion, name = None, random_factor=0.25, export=False, visualize=True):
+    if name is None:
+        name = emotion
+
+    random = torch.randn(512)
+    neutral_base = add_and_multiply_vectors(random, NEUTRAL, 0.2)
+    if emotion == 'fear':
+        vector = add_and_multiply_vectors(neutral_base, FEAR, random_factor)
+    elif emotion == 'disgust':
+        vector = add_and_multiply_vectors(neutral_base, DISGUST, random_factor)
+    elif emotion == 'angry':
+        vector = add_and_multiply_vectors(neutral_base, ANGRY, random_factor)
+    elif emotion == 'surprise':
+        vector = add_and_multiply_vectors(neutral_base, SURPRISE, random_factor)
+    elif emotion == 'sad':
+        vector = add_and_multiply_vectors(neutral_base, SAD, random_factor)
+    elif emotion == 'happy':
+        vector = add_and_multiply_vectors(neutral_base, HAPPY, random_factor)
+    elif emotion == 'neutral':
+        vector = neutral_base
+    elif emotion == 'random':
+        vector = random
+    else:
+        print("Aborting... Pleas choose one of the following options: 'fear', 'disgust', 'angry', 'surprise', 'sad', 'happy', 'neutral', or 'random'.")
+        return None
+
+    emotion_img = gen_img_for_vector(vector)
+
+    if export:
+        emotion_img.save(f'{name}.png')
+
+    if visualize:
+        plt.imshow(emotion_img)
+        plt.title(name)
+        plt.axis('off')
+        plt.show()
+    
+    return emotion_img
+
+
+def gen_emotion_row(name, random_factor=0.25, export=False, visualize=True):
     random = torch.randn(512)
     random_img = gen_img_for_vector(random)
     if export:
         os.makedirs('img/result/random', exist_ok=True)
         random_img.save(f'img/result/random/random_{name}.png')
-    
+
     neutral_base = add_and_multiply_vectors(random, NEUTRAL, 0.2)
 
     emotions = ['Neutral', 'Happy', 'Angry', 'Disgust', 'Fear', 'Surprise', 'Sad']
@@ -41,7 +82,6 @@ def gen_emotion_row(name, random_factor=0.25, export=False, visualize=True):
             emotion_img.save(f'img/result/{emotions[i].lower()}/{emotions[i].lower()}_{name}.png')
         images.append(emotion_img)
 
-    
     # Plotting
     fig, axs = plt.subplots(1, len(images) + 1, figsize=(20, 5))
     axs[0].imshow(random_img)
@@ -59,29 +99,18 @@ def gen_emotion_row(name, random_factor=0.25, export=False, visualize=True):
         plt.savefig(f'img/result/row/row_{name}.png', bbox_inches='tight')
         plt.close(fig)
 
-def show_random_img(download = False):
-    device = select_gpu_and_download(download)
 
-    # Load the model on MPS or CPU
-    with open('stylegan3-r-ffhq-1024x1024.pkl', 'rb') as f:
-        model = pickle.load(f)['G_ema'].to(device)
+# ---------------------------------------- Generate Dataset ----------------------------------------- #
 
-    # Generate random vector
-    z = torch.randn([1, model.z_dim], device=device)  # Latent vectors
+def gen_img_with_vector_train_data(num_imgs, offset = 0):
+    for i in range(1, num_imgs+1):
+        name = i + offset
+        z = gen_img_with_vector(str(name), False)
+        label = ''
 
-    # Generate the image
-    img = model(z, None)
+        z = z.cpu().detach().numpy().flatten().tolist()
 
-    # Normalize and convert the images for visualization
-    normalized_img = (img + 1) / 2
-    normalized_img = normalized_img.clamp(0, 1)
-
-    # Convert the tensor
-    img_pil = transforms.ToPILImage()(normalized_img.squeeze(0))
-    plt.imshow(img_pil)
-    plt.title('Random image')
-    plt.show()
-
+        save_to_two_csvs(name, z, label)
 
 def gen_img_with_vector(name, download = False):
     device = select_gpu_and_download(download)
@@ -108,7 +137,6 @@ def gen_img_with_vector(name, download = False):
 
     return z
 
-
 def gen_img_for_vector(vector, download=False):
     device = select_gpu_and_download(download)
 
@@ -130,16 +158,6 @@ def gen_img_for_vector(vector, download=False):
     img_pil = transforms.ToPILImage()(normalized_img.squeeze(0))
 
     return img_pil
-
-def gen_img_with_vector_train_data(num_imgs, offset = 0):
-    for i in range(1, num_imgs+1):
-        name = i + offset
-        z = gen_img_with_vector(str(name), False)
-        label = ''
-
-        z = z.cpu().detach().numpy().flatten().tolist()
-
-        save_to_two_csvs(name, z, label)
 
 
 # ---------------------------------------------- Utils ---------------------------------------------- #
