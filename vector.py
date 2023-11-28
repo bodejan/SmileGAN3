@@ -2,10 +2,8 @@ import pandas as pd
 import numpy as np
 import ast
 
-
-
-
-
+def add_and_multiply_vectors(vector_a, vector_b, random_factor):
+    return [a * random_factor + b * (1 - random_factor) for a, b in zip(vector_a, vector_b)]
 
 def calculate_and_export_avg_vectors(labels_file = 'img/train/labels.csv', vectors_file = 'img/train/vectors.csv'):
     def load_and_merge_datasets(labels_file, vectors_file):
@@ -42,4 +40,4 @@ def calculate_and_export_avg_vectors(labels_file = 'img/train/labels.csv', vecto
     average_vectors = calculate_average_vectors(merged_df)
     export_vectors(average_vectors, 'average_vectors.csv')
 
-calculate_and_export_avg_vectors()
+#calculate_and_export_avg_vectors()

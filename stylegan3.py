@@ -11,21 +11,20 @@ import time
 import os
 
 from model import FEAR, DISGUST, ANGRY, SURPRISE, SAD, HAPPY, NEUTRAL
+from vector import add_and_multiply_vectors
 
 # DANGEROUS, may lead to crash
 os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'
 
-def gen_emotion_row(name, factor=0.75, export=False, visualize=True):
-    def add_and_multiply_lists(list_a, list_b, factor):
-        return [a * (1 - factor) + b * factor for a, b in zip(list_a, list_b)]
+def gen_emotion_row(name, random_factor=0.25, export=False, visualize=True):
 
     random = torch.randn(512)
-    random_img = gen_img_for_vector(random, f'Random, factor: {factor}')
+    random_img = gen_img_for_vector(random)
     if export:
         os.makedirs('img/result/random', exist_ok=True)
         random_img.save(f'img/result/random/random_{name}.png')
-
-    neutral_base = add_and_multiply_lists(random, NEUTRAL, factor)
+    
+    neutral_base = add_and_multiply_vectors(random, NEUTRAL, 0.2)
 
     emotions = ['Neutral', 'Happy', 'Angry', 'Disgust', 'Fear', 'Surprise', 'Sad']
     emotion_factors = [neutral_base, HAPPY, ANGRY, DISGUST, FEAR, SURPRISE, SAD]
@@ -35,24 +34,28 @@ def gen_emotion_row(name, factor=0.75, export=False, visualize=True):
         if emotions[i] == 'Neutral':
             emotion_input = emotion_factors[i]
         else:
-            emotion_input = add_and_multiply_lists(random, emotion_factor, factor)
-        emotion_img = gen_img_for_vector(emotion_input, f'{emotions[i]}, factor: {factor}')
+            emotion_input = add_and_multiply_vectors(random, emotion_factor, random_factor)
+        emotion_img = gen_img_for_vector(emotion_input)
         if export:
             os.makedirs(f'img/result/{emotions[i].lower()}', exist_ok=True)
             emotion_img.save(f'img/result/{emotions[i].lower()}/{emotions[i].lower()}_{name}.png')
         images.append(emotion_img)
 
-    if visualize:
-        # Plotting
-        fig, axs = plt.subplots(1, len(images) + 1, figsize=(20, 5))
-        axs[0].imshow(random_img)
-        axs[0].set_title(f'Random')
-        axs[0].axis('off')
-        for i, img in enumerate(images):
-            axs[i + 1].imshow(img)
-            axs[i + 1].set_title(emotions[i])
-            axs[i + 1].axis('off')
+    
+    # Plotting
+    fig, axs = plt.subplots(1, len(images) + 1, figsize=(20, 5))
+    axs[0].imshow(random_img)
+    axs[0].set_title(f'Random')
+    axs[0].axis('off')
+    for i, img in enumerate(images):
+        axs[i + 1].imshow(img)
+        axs[i + 1].set_title(emotions[i])
+        axs[i + 1].axis('off')
 
+    if visualize:
+        plt.show()
+
+    if export:
         plt.savefig(f'img/result/row/row_{name}.png', bbox_inches='tight')
         plt.close(fig)
 
