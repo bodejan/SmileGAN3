@@ -6,27 +6,35 @@ img/train/train_img/*
 
 img/result/angry/*
 !img/result/angry/example.png
+!img/result/angry/angry_faces.png
 
 img/result/disgust/*
 !img/result/disgust/example.png
+!img/result/disgust/disgust_faces.png
 
 img/result/fear/*
 !img/result/fear/example.png
+!img/result/fear/fear_faces.png
 
 img/result/happy/*
 !img/result/happy/example.png
+!img/result/happy/happy_faces.png
 
 img/result/neutral/*
 !img/result/neutral/example.png
+!img/result/neutral/neutral_faces.png
 
 img/result/random/*
 !img/result/random/example.png
+!img/result/random/random_faces.png
 
 img/result/sad/*
 !img/result/sad/example.png
+!img/result/sad/sad_faces.png
 
 img/result/surprise/*
 !img/result/surprise/example.png
+!img/result/surprise/surprise_faces.png
 
 stylegan3/
 dnnlib/
