@@ -1,89 +1,90 @@
+import pandas as pd
 import requests
 import torch
 import pickle
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
-from PIL import Image
-
-import torch
-import requests
-import pickle
-from torchvision.utils import make_grid
-import torchvision.transforms as transforms
-import matplotlib.pyplot as plt
-import time
 from PIL import Image
 
 import sys
-import torch
-import requests
-import pickle
-from torchvision.utils import make_grid
-import matplotlib.pyplot as plt
 import time
 import os
-from PIL import Image
 
+from model import FEAR, DISGUST, ANGRY, SURPRISE, SAD, HAPPY, NEUTRAL
+
+# DANGEROUS, may lead to crash
 os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'
-# Add the StyleGAN3 folder to Python path
-sys.path.append('./stylegan3')
 
-def gen_stylegan3_imgs(num_images, download = False):
-    start = time.time()
-    # Check if MPS (Metal) GPU is available and use it
-    device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-    print(f"Using device: {device}")
+def gen_emotion_row(name, factor=0.75, export=False, visualize=True):
+    def add_and_multiply_lists(list_a, list_b, factor):
+        return [a * (1 - factor) + b * factor for a, b in zip(list_a, list_b)]
 
-    model_path = 'stylegan3-r-ffhq-1024x1024.pkl'
-    if download:
-        # Download the pre-trained StyleGAN3 FFHQ model
-        model_url = 'https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-r-ffhq-1024x1024.pkl'
-        response = requests.get(model_url)
-        with open(model_path, 'wb') as f:
-            f.write(response.content)
+    random = torch.randn(512)
+    random_img = gen_img_for_vector(random, f'Random, factor: {factor}')
+    if export:
+        os.makedirs('img/result/random', exist_ok=True)
+        random_img.save(f'img/result/random/random_{name}.png')
+
+    neutral_base = add_and_multiply_lists(random, NEUTRAL, factor)
+
+    emotions = ['Neutral', 'Happy', 'Angry', 'Disgust', 'Fear', 'Surprise', 'Sad']
+    emotion_factors = [neutral_base, HAPPY, ANGRY, DISGUST, FEAR, SURPRISE, SAD]
+    images = []
+
+    for i, emotion_factor in enumerate(emotion_factors):
+        if emotions[i] == 'Neutral':
+            emotion_input = emotion_factors[i]
+        else:
+            emotion_input = add_and_multiply_lists(random, emotion_factor, factor)
+        emotion_img = gen_img_for_vector(emotion_input, f'{emotions[i]}, factor: {factor}')
+        if export:
+            os.makedirs(f'img/result/{emotions[i].lower()}', exist_ok=True)
+            emotion_img.save(f'img/result/{emotions[i].lower()}/{emotions[i].lower()}_{name}.png')
+        images.append(emotion_img)
+
+    if visualize:
+        # Plotting
+        fig, axs = plt.subplots(1, len(images) + 1, figsize=(20, 5))
+        axs[0].imshow(random_img)
+        axs[0].set_title(f'Random')
+        axs[0].axis('off')
+        for i, img in enumerate(images):
+            axs[i + 1].imshow(img)
+            axs[i + 1].set_title(emotions[i])
+            axs[i + 1].axis('off')
+
+        plt.savefig(f'img/result/row/row_{name}.png', bbox_inches='tight')
+        plt.close(fig)
+
+def show_random_img(download = False):
+    device = select_gpu_and_download(download)
 
     # Load the model on MPS or CPU
-    with open(model_path, 'rb') as f:
+    with open('stylegan3-r-ffhq-1024x1024.pkl', 'rb') as f:
         model = pickle.load(f)['G_ema'].to(device)
 
-    for i in range(1, num_images + 1):
-        i_offset = 90
+    # Generate random vector
+    z = torch.randn([1, model.z_dim], device=device)  # Latent vectors
 
-        z = torch.randn([1, model.z_dim], device=device)  # Latent vectors
-        img = model(z, None)
+    # Generate the image
+    img = model(z, None)
 
-        # Normalize and convert the images for saving
-        normalized_img = (img + 1) / 2
-        normalized_img = normalized_img.clamp(0, 1)
+    # Normalize and convert the images for visualization
+    normalized_img = (img + 1) / 2
+    normalized_img = normalized_img.clamp(0, 1)
 
-        # Save images
-        image_folder = './img'  # Folder where images will be saved
-        single_img_pil = Image.fromarray(normalized_img[0].mul(255).permute(1, 2, 0).byte().cpu().numpy())
-        single_img_pil.save(f'{image_folder}/image_{i + i_offset}.png')  # Save the image
-
-        print(f'Generated {i} out of {num_images} images in {time.time() - start}s.')
-
-        time.sleep(3)
+    # Convert the tensor
+    img_pil = transforms.ToPILImage()(normalized_img.squeeze(0))
+    plt.imshow(img_pil)
+    plt.title('Random image')
+    plt.show()
 
 
-#gen_stylegan3_imgs(1)
-
-
-def gen_stylegan3_img_v2(name, download = False):
-    # Check if MPS (Metal) GPU is available and use it
-    device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-    #print(f"Using device: {device}")
-
-    model_path = '/Users/janbode/computer-vision/GenFacialExpressions/StyleGan/stylegan3-r-ffhq-1024x1024.pkl'
-    if download:
-        # Download the pre-trained StyleGAN3 FFHQ model
-        model_url = 'https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-r-ffhq-1024x1024.pkl'
-        response = requests.get(model_url)
-        with open(model_path, 'wb') as f:
-            f.write(response.content)
+def gen_img_with_vector(name, download = False):
+    device = select_gpu_and_download(download)
 
     # Load the model on MPS or CPU
-    with open(model_path, 'rb') as f:
+    with open('stylegan3-r-ffhq-1024x1024.pkl', 'rb') as f:
         model = pickle.load(f)['G_ema'].to(device)
 
     z = torch.randn([1, model.z_dim], device=device)  # Latent vectors
@@ -94,35 +95,22 @@ def gen_stylegan3_img_v2(name, download = False):
     normalized_img = normalized_img.clamp(0, 1)
 
     # Convert the tensor to a PIL Image
-    # Assuming the image tensor is in the shape [1, C, H, W] and in the range [0, 1]
     img_pil = transforms.ToPILImage()(normalized_img.squeeze(0))
 
     # Save the image
-    image_path = f'/Users/janbode/computer-vision/GenFacialExpressions/StyleGan/img/{name}.png'
+    image_path = f'img/train/train_img/{name}.png'
     img_pil.save(image_path)
 
     time.sleep(3)
 
-    return name, z, img_pil
+    return z
 
-#gen_stylegan3_img_v2('test', True)
 
-def gen_stylegan3_img_v3(vector, name='generated_image', download=False):
-    # Check if MPS (Metal) GPU is available and use it
-    device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-    #print(f"Using device: {device}")
-
-    model_path = '/Users/janbode/computer-vision/GenFacialExpressions/StyleGan/stylegan3-r-ffhq-1024x1024.pkl'
-    if download:
-        # Download the pre-trained StyleGAN3 FFHQ model
-        model_url = 'https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-r-ffhq-1024x1024.pkl'
-        
-        response = requests.get(model_url)
-        with open(model_path, 'wb') as f:
-            f.write(response.content)
+def gen_img_for_vector(vector, download=False):
+    device = select_gpu_and_download(download)
 
     # Load the model on MPS or CPU
-    with open(model_path, 'rb') as f:
+    with open('stylegan3-r-ffhq-1024x1024.pkl', 'rb') as f:
         model = pickle.load(f)['G_ema'].to(device)
 
     # Use the provided vector
@@ -137,9 +125,60 @@ def gen_stylegan3_img_v3(vector, name='generated_image', download=False):
 
     # Convert the tensor
     img_pil = transforms.ToPILImage()(normalized_img.squeeze(0))
-    #plt.imshow(img_pil)
-    #plt.title(name)
-    #plt.show()
 
     return img_pil
 
+def gen_img_with_vector_train_data(num_imgs, offset = 0):
+    for i in range(1, num_imgs+1):
+        name = i + offset
+        z = gen_img_with_vector(str(name), False)
+        label = ''
+
+        z = z.cpu().detach().numpy().flatten().tolist()
+
+        save_to_two_csvs(name, z, label)
+
+
+# ---------------------------------------------- Utils ---------------------------------------------- #
+
+def select_gpu_and_download(download):
+    # Check if MPS (Metal) GPU is available and use it
+    device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
+    #print(f"Using device: {device}")
+
+    model_path = 'stylegan3-r-ffhq-1024x1024.pkl'
+    if download:
+        print('Downloading stylegan3-r-ffhq-1024x1024.pkl, this might take some time...')
+        # Download the pre-trained StyleGAN3 FFHQ model
+        model_url = 'https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-r-ffhq-1024x1024.pkl'
+        
+        response = requests.get(model_url)
+        with open(model_path, 'wb') as f:
+            f.write(response.content)
+    
+    return device
+
+def save_to_two_csvs(name, z, label):
+    label_filename = 'img/train/labels.csv'
+    vector_filename = 'img/train/vectors.csv'
+    
+    # Create a DataFrame for labels
+    label_df = pd.DataFrame({'name': [name], 'label': [label]})
+    # Create a DataFrame for vectors
+    vector_df = pd.DataFrame({'name': [name], 'z_values': [z]})
+    
+    # Save label DataFrame to CSV
+    if os.path.exists(label_filename):
+        # File exists, append the data without the header
+        label_df.to_csv(label_filename, mode='a', header=False, index=False)
+    else:
+        # File does not exist, create and write the data with the header
+        label_df.to_csv(label_filename, header=True, index=False)
+    
+    # Save vector DataFrame to CSV
+    if os.path.exists(vector_filename):
+        # File exists, append the data without the header
+        vector_df.to_csv(vector_filename, mode='a', header=False, index=False)
+    else:
+        # File does not exist, create and write the data with the header
+        vector_df.to_csv(vector_filename, header=True, index=False)
