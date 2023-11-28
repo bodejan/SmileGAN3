@@ -42,12 +42,19 @@ See [main.py](main.py) for further information and to understand all function ex
 ## Setup
 ### 1. Create Virtual Environment:
 
-1. Create venv:
+1. Start this repository ⭐️
+
+2. Clone this repository
+    ```bash
+    git clone git@github.com:bodejan/SmileGAN3.git
+    ```
+
+3. Create venv:
     ```bash
     python3 -m venv venv
     ```
 
-2. Activate venv
+4. Activate venv
 
     On Windows:
     ```bash
@@ -58,13 +65,13 @@ See [main.py](main.py) for further information and to understand all function ex
     ```bash
     source venv/bin/activate
     ```
-3. Install dependencies:
+5. Install dependencies:
 
     ```bash
     pip install -r requirements.txt
     ```
 
-4. Deactivate venv (when done generating images)
+6. Deactivate venv (when done generating images)
 
     ```bash
     deactivate  
@@ -92,7 +99,7 @@ See [main.py](main.py) for further information and to understand all function ex
 
 ## Usage
 
-We offer to functions to generate images. Example executions can be found in [demo.ipynb](demo.ipynb). 
+We offer tow functions to generate images. Example executions can be found in [demo.ipynb](demo.ipynb). 
 
 *Note: At the first execution the StyleGan3 model will be downloaded, this may take some time.*
 
@@ -104,7 +111,7 @@ gen_emotion(emotion, name = None, random_factor=0.25, export=False, visualize=Tr
 
 The *gen_emotion* function allows users to create a single image for a specified emotion. Available options are: *fear, neutral, disgust, angry, surprised, sad, happy,* and *random*.
 
-For example, *gen_emotion('angry')* generates the following images. 
+For example, *gen_emotion('angry')* generates the following image. 
 
 <img src="img/result/angry/example.png" alt="angry person" width="300"/>
 
