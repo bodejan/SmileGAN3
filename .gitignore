@@ -1,8 +1,16 @@
 # Custom
 .DS_Store
 fer2013/
-img/
-img_v1/
+img/train
+img/result/angry
+img/result/disgust
+img/result/fear
+img/result/happy
+img/result/neutral
+img/result/random
+img/result/sad
+img/result/surprise
+
 stylegan3/
 training_checkpoints/
 train/

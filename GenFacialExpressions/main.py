@@ -141,6 +141,6 @@ def gen_mix(plt_name, factor=0.75):
     plt.close(fig)
 
 
-for i in range(0, 50):
+for i in range(50, 100):
     gen_mix(str(i))
 
