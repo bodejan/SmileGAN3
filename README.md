@@ -94,7 +94,7 @@ See [main.py](main.py) for further information and to understand all function ex
 
 We offer to functions to generate images. Example executions can be found in [demo.ipynb](demo.ipynb). 
 
-*Note:* At the first execution the StyleGan3 model will be downloaded, this may take some time.
+*Note: At the first execution the StyleGan3 model will be downloaded, this may take some time.*
 
 ### Single Image
 

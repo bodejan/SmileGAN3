@@ -112,8 +112,8 @@ def gen_img_with_vector_train_data(num_imgs, offset = 0):
 
         save_to_two_csvs(name, z, label)
 
-def gen_img_with_vector(name, download = False):
-    device = select_gpu_and_download(download)
+def gen_img_with_vector(name):
+    device = select_gpu_and_download()
 
     # Load the model on MPS or CPU
     with open('stylegan3-r-ffhq-1024x1024.pkl', 'rb') as f:
@@ -137,8 +137,8 @@ def gen_img_with_vector(name, download = False):
 
     return z
 
-def gen_img_for_vector(vector, download=False):
-    device = select_gpu_and_download(download)
+def gen_img_for_vector(vector):
+    device = select_gpu_and_download()
 
     # Load the model on MPS or CPU
     with open('stylegan3-r-ffhq-1024x1024.pkl', 'rb') as f:
@@ -162,14 +162,14 @@ def gen_img_for_vector(vector, download=False):
 
 # ---------------------------------------------- Utils ---------------------------------------------- #
 
-def select_gpu_and_download(download):
+def select_gpu_and_download():
     # Check if MPS (Metal) GPU is available and use it
     device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-    #print(f"Using device: {device}")
 
     model_path = 'stylegan3-r-ffhq-1024x1024.pkl'
-    
-    if download:
+    path_exists = os.path.exists(model_path)
+
+    if path_exists == False:
         print('Downloading stylegan3-r-ffhq-1024x1024.pkl, this might take some time...')
         # Download the pre-trained StyleGAN3 FFHQ model
         model_url = 'https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-r-ffhq-1024x1024.pkl'
@@ -177,8 +177,11 @@ def select_gpu_and_download(download):
         response = requests.get(model_url)
         with open(model_path, 'wb') as f:
             f.write(response.content)
-    
-    return device
+        
+        return device
+    else:
+        return device
+        
 
 def save_to_two_csvs(name, z, label):
     label_filename = 'img/train/labels.csv'

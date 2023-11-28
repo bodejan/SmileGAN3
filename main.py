@@ -19,7 +19,7 @@ gen_img_with_vector_train_data(1000, 0)
 
 calculate_and_export_avg_vectors()
 
-# Optionally: Update vectors vars in model.py using the output-file average_vectors.csv
+# Optional: Update vectors vars in model.py using the output-file average_vectors.csv
 
 # Optional: Visualize vectors
 
