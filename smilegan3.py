@@ -168,6 +168,7 @@ def select_gpu_and_download(download):
     #print(f"Using device: {device}")
 
     model_path = 'stylegan3-r-ffhq-1024x1024.pkl'
+    
     if download:
         print('Downloading stylegan3-r-ffhq-1024x1024.pkl, this might take some time...')
         # Download the pre-trained StyleGAN3 FFHQ model

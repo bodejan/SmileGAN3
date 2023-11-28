@@ -12,6 +12,8 @@ If you don't care how it works, just skip to [Setup](#setup).
 
 ## Key Steps
 
+See [main.py](main.py) for further information and to understand all function executions.
+
 ### 1. Image Generation with StyleGAN3
 
 - **Objective**: Generate 1000 images using specific input vectors via StyleGAN3.
@@ -90,7 +92,9 @@ If you don't care how it works, just skip to [Setup](#setup).
 
 ## Usage
 
-We offer to functions to generate images. Example executions can be found in [demo.ipynb](demo.ipynb).
+We offer to functions to generate images. Example executions can be found in [demo.ipynb](demo.ipynb). 
+
+*Note:* At the first execution the StyleGan3 model will be downloaded, this may take some time.
 
 ### Single Image
 
@@ -102,7 +106,8 @@ The *gen_emotion* function allows users to create a single image for a specified
 
 For example, *gen_emotion('angry')* generates the following images. 
 
-![angry person](img/result/angry/example.png)
+<img src="img/result/angry/example.png" alt="angry person" width="300"/>
+
 
 ### Multiple Images 
 
