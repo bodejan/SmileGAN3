@@ -17,7 +17,7 @@ training_checkpoints/
 test/
 dnnlib/
 torch_utils/
-GenFacialExpressions/StyleGan/stylegan3-r-ffhq-1024x1024.pkl
+GenFacialExpressions/stylegan3-r-ffhq-1024x1024.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
